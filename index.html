@@ -226,7 +226,9 @@ Let's use URIs for property names:
 ]
 ```
 
-Finally: unambiguous, well-spec'd. **Linked data!**
+Finally: unambiguous, well-spec'd. Dataset *describes itself*.
+
+Arrived at **Linked data!**
 
 However, a bit verbose (not very DRY). Let's refactor.
 
@@ -296,12 +298,128 @@ See https://en.wikipedia.org/wiki/JSON-LD
 
 ---
 
+### Linked Data in JSON-LD
+
+Bonus: Let's add metadata!
+
+```json
+{
+  "@context": {
+    "givenName": "http://schema.org/givenName",
+    "birthDate": "http://schema.org/birthDate",
+    "created": "http://purl.org/dc/terms/created"
+  },
+  "@id": "https://example.com/users",
+  "created": {
+        "@value": "2013-09-11T07:18:19+0000",
+        "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+  },
+  "@graph": [
+    {
+      "@id": "http://www.alice.com",
+      "givenName": "Alice",
+      "birthDate": "1990-01-01"
+    },
+    ...
+  ]
+}
+```
+
+Notice the top-level `@id` and `created`
+
+---
+
 ### RDF - Resource Description Framework
 
 (see https://www.w3.org/TR/rdf-primer/ )
 
+* RDF - data model for knowledge representation and Linked Data
+* Similar to Entity-Attribute-Value model
+* Data as a labeled, directed multi-graph of *statements*
+* Each statement (or *triple*) in Subject-Predicate-Object format
+
+![](http://dublincore.org/documents/2008/01/14/dc-rdf/rdfexamplefig.png)
 
 ---
+
+### RDF Serializations
+
+RDF graphs are *serialized* in different formats:
+* JSON-LD (familiar to most developers)
+* RDFa (embedded in HTML attributes)
+* Turtle
+* RDF-XML
+
+---
+
+### RDF Serializations
+
+##### JSON-LD:
+
+```js
+{               //          .-- subject
+  "@id": "http://www.alice.com",
+  "givenName":     "Alice",
+  "birthDate":     "1990-01-01"
+  // ^- predicate      ^- object
+
+}
+```
+
+##### Turtle:
+
+```ttl
+@prefix schema: <http://schema.org/> .
+
+<http://www.alice.com>
+  schema:givenName "Alice";
+  schema:birthDate "1990-01-01" .
+```
+
+---
+
+### RDF Serializations
+
+##### RDFa (HTML):
+
+```html
+<!DOCTYPE html>
+<html prefix='schema: http://schema.org/' xmlns='http://www.w3.org/1999/xhtml'>
+  <body>
+      <table class='properties'>
+        <tr resource='http://www.alice.com'>
+          <td property='schema:birthDate'>1990-01-01</td>
+          <td property='schema:givenName'>Alice</td>
+        </tr>
+      </table>
+  </body>
+</html>
+```
+
+Btw: Google parses and understands RDF embedded in HTML!
+
+(see https://developers.google.com/search/docs/guides/intro-structured-data )
+
+---
+
+### Summary: Linked Data Benefits
+
+1. Globally unique IDs (mashups)
+2. Globally unique unambiguous property names (reuse, interop)
+3. Self-describing datasets (links to docs, schemas)
+4. Discoverability (data *links* to other data)
+5. (Bonus) Better searches (embed data in HTML, Google parses semantics)
+
+#### RDF Benefits:
+* Rich toolset and ecosystem
+* Publish and reuse RDF schemas / ontologies
+* Advanced capabilities (schema validation, deduction, reasoners)
+
+---
+
+class: center, middle
+
+### Questions?
 
     </textarea>
     <script src="remark-latest.min.js">
