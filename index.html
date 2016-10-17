@@ -67,7 +67,7 @@ id,name,birth_date
 Familiar. Output of SQL queries.
 
 But:
- * Schema unclear, defined externally. Is `birth_date` a String or Date?
+ * Schema unclear (implicit). Is `birth_date` a String or Date?
  * In code, access attributes by index. (`let name = row[1]`)
  * (ORMs invented to help ease this pain point)
 
@@ -85,6 +85,7 @@ But:
 
 * Very familiar to developers. (Output of many NoSQL/document stores.)
 * Can access properties by name instead of index. (`let name = row.name`)
+* Most languages easily parse/serialize to it
 
 ---
 
@@ -100,6 +101,7 @@ But:
 
 * Very familiar to developers. (Output of many NoSQL/document stores.)
 * Can access properties by name instead of index. (`let name = row.name`)
+* Most languages easily parse/serialize to it
 
 But:
 * Schema still unclear (defined externally)
@@ -302,18 +304,19 @@ See https://en.wikipedia.org/wiki/JSON-LD
 
 Bonus: Let's add metadata!
 
-```json
+```js
 {
   "@context": {
     "givenName": "http://schema.org/givenName",
     "birthDate": "http://schema.org/birthDate",
     "created": "http://purl.org/dc/terms/created"
   },
-  "@id": "https://example.com/users",
+  "@id": "https://example.com/users",  // <- ID of this dataset
   "created": {
         "@value": "2013-09-11T07:18:19+0000",
         "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
   },
+  //     ^- timestamp of when it was generated
   "@graph": [
     {
       "@id": "http://www.alice.com",
@@ -324,8 +327,6 @@ Bonus: Let's add metadata!
   ]
 }
 ```
-
-Notice the top-level `@id` and `created`
 
 ---
 
