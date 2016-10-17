@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Understanding Linked Data</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      li { padding-bottom: 1em; }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Understanding Linked Data
+
+---
+
+# Why Linked Data?
+
+
+What benefits does it bring to a developer?
+
+1. Globally unique IDs (URIs as IDs)
+2. Globally unique *property names* (think db column names)
+3. Self-describing (self-documenting) datasets
+---
+
+class: center, middle
+
+## Arriving at Linked Data
+
+---
+
+### Lets start with some CSV...
+
+```csv
+id,name,birth_date
+1,"Alice","1990-01-01"
+2,"Bob","1995-02-02"
+3,"Cindy","1999-01-01"
+```
+
+Familiar. Output of SQL queries.
+
+---
+
+### Lets start with some CSV...
+
+```csv
+id,name,birth_date
+1,"Alice","1990-01-01"
+2,"Bob","1995-02-02"
+3,"Cindy","1999-01-01"
+```
+
+Familiar. Output of SQL queries.
+
+But:
+ * Schema unclear, defined externally. Is `birth_date` a String or Date?
+ * In code, access attributes by index. (`let name = row[1]`)
+ * (ORMs invented to help ease this pain point)
+
+---
+
+### How about JSON?
+
+```json
+[
+  { "id": 1, "name": "Alice", "birth_date": "1990-01-01" },
+  { "id": 2, "name": "Bob", "birth_date": "1995-02-02" },
+  { "id": 3, "name": "Cindy", "birth_date": "1999-01-01" }
+]
+```
+
+* Very familiar to developers. (Output of many NoSQL/document stores.)
+* Can access properties by name instead of index. (`let name = row.name`)
+
+---
+
+### How about JSON?
+
+```json
+[
+  { "id": 1, "name": "Alice", "birth_date": "1990-01-01" },
+  { "id": 2, "name": "Bob", "birth_date": "1995-02-02" },
+  { "id": 3, "name": "Cindy", "birth_date": "1999-01-01" }
+]
+```
+
+* Very familiar to developers. (Output of many NoSQL/document stores.)
+* Can access properties by name instead of index. (`let name = row.name`)
+
+But:
+* Schema still unclear (defined externally)
+* The `id`s are still source-specific. Not collision resistant, hard to merge/mix.
+
+Can we have *globally unique* collision-resistant IDs?
+
+---
+
+### Globally unique IDs
+
+#### IDs
+* Familiar
+* Auto-increment? (What about distributed DBs?)
+
+#### UUIDs (Universal Unique IDs)
+* Collision-resistant, but non-trivial to scale (cf Twitter's Snowflake)
+
+#### URLs as IDs
+* Globally unique, collision-resistant
+* Bonus: useful resources if you de-reference
+
+---
+
+### JSON, plus URIs as ID values
+
+```json
+[
+  { "id": "http://www.alice.com", "name": "Alice", "birth_date": "1990-01-01" },
+  { "id": "http://bob.provider.com", "name": "Bob", "birth_date": "1995-02-02" },
+  { "id": "http://cindy.provider.com", "name": "Cindy", "birth_date": "1999-01-01" }
+]
+```
+
+* More portable. (Can merge it into existing datasets easily.)
+* Can now de-reference the IDs (maybe get more user info).
+
+---
+
+### JSON, plus URIs as ID values
+
+```json
+[
+  { "id": "http://www.alice.com", "name": "Alice", "birth_date": "1990-01-01" },
+  { "id": "http://bob.provider.com", "name": "Bob", "birth_date": "1995-02-02" },
+  { "id": "http://cindy.provider.com", "name": "Cindy", "birth_date": "1999-01-01" }
+]
+```
+
+* More portable. (Can merge it into existing datasets easily.)
+* Can now de-reference the IDs (maybe get more user info).
+
+But:
+* Ambiguous semantics of property names. Is `name` a full name or first name?
+* Schema still unclear (maybe documentation somewhere...?)
+
+---
+
+### Unique, well-defined property names?
+
+##### Q: How can we have property names that are
+* Globally unique
+* Well-defined semantics and value types
+
+---
+
+### Unique, well-defined property names?
+
+##### Q: How can we have property names that are
+* Globally unique
+* Well-defined semantics and value types
+
+##### Answer 1: Global registry + specs
+For example, IANA registry + IETF or W3C RFCs
+
+---
+### Unique, well-defined property names?
+
+##### Q: How can we have property names that are
+* Globally unique
+* Well-defined semantics and value types
+
+##### Answer 1: Global registry + specs
+For example, IANA registry + IETF or W3C RFCs
+
+##### Answer 2: URIs as property names
+Instead of: `name`, use `http://schema.org/givenName`.
+
+Added benefit: de-reference the URI to get the schema.
+
+---
+
+### URIs as property names
+
+Given something like `http://schema.org/givenName`
+
+* Globally unique, collision-resistant properties
+* Can get the schema (semantics, value types, docs) at that URI
+* Encourages reuse
+
+---
+
+### Back to our JSON
+
+Let's use URIs for property names:
+
+```json
+[
+  {
+    "id": "http://www.alice.com",
+    "http://schema.org/givenName": "Alice",
+    "http://schema.org/birthDate": "1990-01-01"
+  },
+  {
+    "id": "http://bob.provider.com",
+    "http://schema.org/givenName": "Bob",
+    "http://schema.org/birthDate": "1995-02-02"
+  },
+  {
+    "id": "http://cindy.provider.com",
+    "http://schema.org/givenName": "Cindy",
+    "http://schema.org/birthDate": "1999-01-01"
+  }
+]
+```
+
+Finally: unambiguous, well-spec'd. **Linked data!**
+
+However, a bit verbose (not very DRY). Let's refactor.
+
+---
+
+### Linked Data in JSON, refactored
+
+```json
+{
+  "context": {
+    "givenName": "http://schema.org/givenName",
+    "birthDate": "http://schema.org/birthDate"
+  },
+  "data": [
+    {
+      "id": "http://www.alice.com",
+      "givenName": "Alice",
+      "birthDate": "1990-01-01"
+    },
+    {
+      "id": "http://bob.provider.com",
+      "givenName": "Bob",
+      "birthDate": "1995-02-02"
+    },
+    {
+      "id": "http://cindy.provider.com",
+      "givenName": "Cindy",
+      "birthDate": "1999-01-01"
+    }
+  ]
+}
+```
+
+Aside: `http://schema.org` is a *vocabulary* or *ontology*.
+
+---
+
+### Linked Data in JSON-LD
+
+A few small syntax tweaks (`id` to `@id`, `data` to `@graph`...)
+
+```json
+{
+  "@context": {
+    "givenName": "http://schema.org/givenName",
+    "birthDate": "http://schema.org/birthDate"
+  },
+  "@graph": [
+    {
+      "@id": "http://www.alice.com",
+      "givenName": "Alice",
+      "birthDate": "1990-01-01"
+    },
+    {
+      "@id": "http://bob.provider.com",
+      "givenName": "Bob",
+      "birthDate": "1995-02-02"
+    },
+    ...
+  ]
+}
+```
+
+Fully linked data. Familiar (JSON) + powerful tools (RDF).
+
+See https://en.wikipedia.org/wiki/JSON-LD
+
+---
+
+### RDF - Resource Description Framework
+
+(see https://www.w3.org/TR/rdf-primer/ )
+
+
+---
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
